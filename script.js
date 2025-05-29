@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const iframe = document.createElement('iframe');
                 iframe.className = 'card-iframe';
                 iframe.src = demo.file;
-                iframe.setAttribute('sandbox', 'allow-scripts'); // Basic sandboxing for previews
+                // iframe.setAttribute('sandbox', 'allow-scripts'); // Sandboxing might interfere with complex demos if they need more permissions
                 iframe.setAttribute('loading', 'lazy'); // Lazy load iframes
                 iframeContainer.appendChild(iframe);
 
@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             modalTitle.textContent = title;
             modalIframe.src = file;
+            // modalIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-forms'); // More permissive sandbox for modal
 
             try {
                 const response = await fetch(file);

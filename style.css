@@ -33,11 +33,12 @@ body {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Adjusted minmax for slightly larger cards */
-    grid-auto-rows: minmax(200px, auto); /* Adjusted minmax for slightly taller rows */
-    gap: 1.5rem; /* Consistent gap */
-    padding: 2rem;
-    max-width: 1400px;
+    /* Aim for 2 cards per row on medium screens, 3 on larger, 1 on small */
+    grid-template-columns: repeat(auto-fill, minmax(clamp(300px, 30vw, 450px), 1fr));
+    grid-auto-rows: minmax(350px, auto); /* Increased height for more iframe visibility */
+    gap: 2rem; /* Increased gap slightly */
+    padding: 2rem 1rem; /* Reduced side padding */
+    max-width: 1600px; /* Slightly increased max-width */
     margin: 0 auto; /* Center the grid */
 }
 
@@ -64,8 +65,8 @@ body {
 
 .card-iframe-container {
     width: 100%;
-    height: 150px; /* Fixed height for the iframe preview area */
-    overflow: hidden;
+    height: calc(100% - 50px); /* Allow iframe to take most of the card height, leaving space for title */
+    overflow: auto; /* Allow scrolling within the iframe container if content overflows */
     border-bottom: 1px solid #eee;
 }
 
@@ -73,7 +74,7 @@ body {
     width: 100%;
     height: 100%;
     border: none;
-    pointer-events: none; /* Prevent interaction with iframe in the grid */
+    /* pointer-events: none; */ /* Removed to allow interaction */
 }
 
 .card-title-overlay {
@@ -82,6 +83,10 @@ body {
     border-top: 1px solid #eee;
     width: 100%;
     box-sizing: border-box;
+    height: 50px; /* Fixed height for the title overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .card h3 {
@@ -94,20 +99,20 @@ body {
 }
 
 .card.featured {
-    grid-column: span 2;
-    grid-row: span 2;
+    grid-column: span 2; /* Keep featured span, but it will be relative to new column sizes */
+    grid-row: span 1; /* Featured cards might not need to span more rows if cards are taller */
     background-color: #e9f5ff; /* Light blue tint for featured items */
     border: 2px solid #a3d5ff; /* Blue border for featured */
 }
 
 .card.featured .card-iframe-container {
-    height: calc(100% - 50px); /* Adjust height for featured card title */
+    height: calc(100% - 60px); /* Adjust height for featured card title */
 }
 
-.card.featured h3 {
-    font-size: 1.5rem; /* Even larger title for featured */
-    color: #1a73e8; /* Stronger blue for featured titles */
+.card.featured .card-title-overlay h3 {
+    font-size: 1.3rem; /* Adjusted featured title size */
 }
+
 
 .empty-message {
     grid-column: 1 / -1; /* Span all columns */
@@ -288,8 +293,9 @@ body {
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        padding: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(clamp(280px, 45vw, 400px), 1fr));
+        padding: 1.5rem 0.5rem; /* Further reduced side padding for smaller screens */
+        gap: 1.5rem;
     }
     .card.featured {
         grid-column: span 1; /* Stack featured cards on smaller screens */
@@ -312,14 +318,19 @@ body {
 }
 
 @media (max-width: 480px) {
+    .grid-container {
+        grid-template-columns: 1fr; /* Single column on very small screens */
+        padding: 1rem 0.25rem;
+        gap: 1rem;
+    }
+    .card-iframe-container {
+        height: 250px; /* Adjust fixed height for single column layout if needed */
+    }
     .site-header h1 {
         font-size: 1.8rem;
     }
     .site-header p {
         font-size: 1rem;
-    }
-    .grid-container {
-        grid-template-columns: 1fr; /* Single column on very small screens */
     }
     .modal-header {
         flex-direction: column;
