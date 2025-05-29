@@ -6,6 +6,12 @@
     "featured": true
   },
   {
+    "file": "demos/Aurora Background.html",
+    "title": "Aurora Background",
+    "docs": "",
+    "featured": false
+  },
+  {
     "file": "demos/Particle Typography.html",
     "title": "Particle Typography",
     "docs": "",
