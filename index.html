@@ -57,9 +57,30 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/service-worker.js').then(registration => {
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }, err => {
+
+                    // Optional: Listen for controller change which happens after a new SW activates
+                    navigator.serviceWorker.oncontrollerchange = () => {
+                        console.log('New service worker activated.');
+                        // At this point, the new SW is active. If you want to force a reload:
+                        // window.location.reload(); 
+                        // However, it's better to prompt the user or handle updates more gracefully.
+                    };
+
+                }).catch(err => {
                     console.log('ServiceWorker registration failed: ', err);
                 });
+            });
+
+            // Listen for messages from the service worker
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'NEW_CONTENT_AVAILABLE') {
+                    // Example: Show a toast notification or a button to refresh
+                    console.log('New content available for demos.json! Prompt user to refresh.');
+                    // You could implement a more user-friendly notification here
+                    if (confirm('New demo content is available. Refresh to see the latest updates?')) {
+                        window.location.reload();
+                    }
+                }
             });
         }
     </script>
