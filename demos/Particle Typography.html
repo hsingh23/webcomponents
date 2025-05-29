@@ -32,10 +32,14 @@
     <!-- Define the web component -->
     <script>
         class ParticleTypography extends HTMLElement {
+            static get observedAttributes() {
+                return ['text'];
+            }
+
             constructor() {
                 super();
                 this.attachShadow({ mode: 'open' });
-                
+
                 // Component state
                 this.canvas = null;
                 this.ctx = null;
@@ -44,14 +48,14 @@
                 this.mouse = { x: undefined, y: undefined };
                 this.animationFrameId = null;
                 this.initialParticleCountCalculated = false;
-                
+
                 // Default configuration
-                this.text = this.getAttribute('text') || '21ST.DEV';
+                this.text = this.getAttribute('text') || 'Harsh is awesome!';
                 this.fontFamily = "'Roboto Mono', monospace";
-                
-                // Physics parameters
+
+                // Physics parameters (will be dynamically adjusted)
                 this.physicsParams = {
-                    PARTICLE_COUNT_TARGET: 4000,
+                    PARTICLE_COUNT_TARGET: 5000,
                     PARTICLE_BASE_SIZE: 1.3,
                     ATTRACTION_FORCE_BASE: 0.10,
                     NOISE_STRENGTH_BASE: 0.4,
@@ -60,9 +64,9 @@
                     MOUSE_DISPERSE_STRENGTH: 1.2,
                     TRAIL_ALPHA: 0.22
                 };
-                
-                // Static configuration
-                this.POINT_SAMPLING_DENSITY = 4;
+
+                // These will be dynamically adjusted
+                this.POINT_SAMPLING_DENSITY = 6;
                 this.TARGET_CANVAS_FILL_PERCENTAGE = 0.70;
                 this.MAX_INITIAL_FONT_SIZE = 350;
                 this.MIN_FONT_SIZE = 10;
@@ -70,13 +74,22 @@
                 this.SETTLE_DISTANCE_THRESHOLD = 4;
                 this.SETTLE_ATTRACTION_MULTIPLIER = 0.15;
                 this.SETTLE_NOISE_MULTIPLIER = 0.7;
-                
+
                 // Color palette
                 this.PARTICLE_COLORS = [
-                    '#4285F4', '#73A9FF', '#DB4437', '#E06666', 
-                    '#FF69B4', '#8A2BE2', '#DDA0DD', '#9370DB', 
+                    '#4285F4', '#73A9FF', '#DB4437', '#E06666',
+                    '#FF69B4', '#8A2BE2', '#DDA0DD', '#9370DB',
                     '#BA55D3', '#C71585', '#E6E6FA'
                 ];
+            }
+
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (name === 'text' && oldValue !== newValue) {
+                    this.text = newValue || 'Harsh is awesome!';
+                    this.initialParticleCountCalculated = false;
+                    this.adjustLayout();
+                    this.initParticles(true, true);
+                }
             }
             
             connectedCallback() {
@@ -190,18 +203,49 @@
             }
             
             getWordPoints(word, canvasWidth, canvasHeight) {
+                // Improved: Always use dense sampling and moderate font size for short/medium text
+                const textLen = word ? word.trim().length : 0;
+                if (textLen <= 4) {
+                    this.POINT_SAMPLING_DENSITY = 3;
+                    this.TARGET_CANVAS_FILL_PERCENTAGE = 0.80;
+                    this.MAX_INITIAL_FONT_SIZE = 180;
+                    this.MIN_FONT_SIZE = 36;
+                    this.FIT_CHECK_PADDING = 16;
+                    this.SETTLE_DISTANCE_THRESHOLD = 4;
+                    this.SETTLE_ATTRACTION_MULTIPLIER = 0.15;
+                    this.SETTLE_NOISE_MULTIPLIER = 0.7;
+                } else if (textLen <= 30) {
+                    this.POINT_SAMPLING_DENSITY = 5;
+                    this.TARGET_CANVAS_FILL_PERCENTAGE = 0.82;
+                    this.MAX_INITIAL_FONT_SIZE = 140;
+                    this.MIN_FONT_SIZE = 62;
+                    this.FIT_CHECK_PADDING = 30;
+                    this.SETTLE_DISTANCE_THRESHOLD = 1;
+                    this.SETTLE_ATTRACTION_MULTIPLIER = 0.2;
+                    this.SETTLE_NOISE_MULTIPLIER = 0.05;
+                } else {
+                    this.POINT_SAMPLING_DENSITY = 5;
+                    this.TARGET_CANVAS_FILL_PERCENTAGE = 0.70;
+                    this.MAX_INITIAL_FONT_SIZE = 100;
+                    this.MIN_FONT_SIZE = 18;
+                    this.FIT_CHECK_PADDING = 22;
+                    this.SETTLE_DISTANCE_THRESHOLD = 5;
+                    this.SETTLE_ATTRACTION_MULTIPLIER = 0.13;
+                    this.SETTLE_NOISE_MULTIPLIER = 0.8;
+                }
+
                 const points = [];
                 if (!word || word.trim() === "" || canvasWidth <= 0 || canvasHeight <= 0) {
                     return [{ sourceCanvasWidth: canvasWidth, sourceCanvasHeight: canvasHeight, isEmptyPlaceholder: true }];
                 }
-                
+
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = canvasWidth;
                 tempCanvas.height = canvasHeight;
                 const tempCtx = tempCanvas.getContext('2d');
                 const normalizedWord = word.toUpperCase();
                 let optimalFontSize = this.MIN_FONT_SIZE;
-                
+
                 // Find optimal font size
                 for (let fs = this.MAX_INITIAL_FONT_SIZE; fs >= this.MIN_FONT_SIZE; fs -= 2) {
                     tempCtx.font = `bold ${fs}px ${this.fontFamily}`;
@@ -210,14 +254,14 @@
                     const textHeightWithPadding = (textMetrics.actualBoundingBoxAscent || fs * 0.75) +
                                                   (textMetrics.actualBoundingBoxDescent || fs * 0.25) +
                                                   this.FIT_CHECK_PADDING;
-                    
+
                     if (textWidthWithPadding < canvasWidth * this.TARGET_CANVAS_FILL_PERCENTAGE &&
                         textHeightWithPadding < canvasHeight * this.TARGET_CANVAS_FILL_PERCENTAGE) {
                         optimalFontSize = fs;
                         break;
                     }
                 }
-                
+
                 // Draw text and get points
                 tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
                 tempCtx.font = `bold ${optimalFontSize}px ${this.fontFamily}`;
@@ -225,10 +269,10 @@
                 tempCtx.textAlign = 'center';
                 tempCtx.textBaseline = 'middle';
                 tempCtx.fillText(normalizedWord, tempCanvas.width / 2, tempCanvas.height / 2);
-                
+
                 const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
                 const data = imageData.data;
-                
+
                 for (let y = 0; y < tempCanvas.height; y += this.POINT_SAMPLING_DENSITY) {
                     for (let x = 0; x < tempCanvas.width; x += this.POINT_SAMPLING_DENSITY) {
                         const alphaIndex = (y * tempCanvas.width + x) * 4 + 3;
@@ -237,38 +281,38 @@
                         }
                     }
                 }
-                
+
                 if (points.length === 0) {
                     return [{ sourceCanvasWidth: canvasWidth, sourceCanvasHeight: canvasHeight, isEmptyPlaceholder: true }];
                 }
-                
+
                 return points;
             }
             
             initParticles(forceRepopulateParticles = true, forceRecalculatePoints = true) {
                 if (!this.canvas) return;
-                
+
                 const currentWord = this.text.toUpperCase();
-                
+
                 if (forceRecalculatePoints || this.wordTargetPoints.length === 0 ||
                     (this.wordTargetPoints.length > 0 && (
                         this.wordTargetPoints[0].sourceCanvasWidth !== this.canvas.width ||
                         this.wordTargetPoints[0].sourceCanvasHeight !== this.canvas.height
                     ))) {
                     this.wordTargetPoints = this.getWordPoints(currentWord, this.canvas.width, this.canvas.height);
-                    
+
                     // Dynamic particle count calculation
                     if (!this.initialParticleCountCalculated && this.wordTargetPoints.length > 0 && !this.wordTargetPoints[0].isEmptyPlaceholder) {
                         const particleCountStep = 100;
-                        const particleCountMin = 500;
-                        const particleCountMax = 10000;
+                        const particleCountMin = 1200; // Lowered minimum for less crowding
+                        const particleCountMax = 12000;
                         const INITIAL_PARTICLES_PER_TARGET_POINT_RATIO = 1.0;
-                        
+
                         let dynamicParticleCount = this.wordTargetPoints.length * INITIAL_PARTICLES_PER_TARGET_POINT_RATIO;
                         dynamicParticleCount = Math.round(
                             Math.max(particleCountMin, Math.min(particleCountMax, dynamicParticleCount)) / particleCountStep
                         ) * particleCountStep;
-                        
+
                         this.physicsParams.PARTICLE_COUNT_TARGET = dynamicParticleCount;
                         this.initialParticleCountCalculated = true;
                     }
@@ -446,7 +490,7 @@
 
     <!-- Demo usage -->
     <div class="demo-container">
-        <particle-typography text="Harsh is awesome!" style="width: 100%; height: 100%;"></particle-typography>
+        <particle-typography text="Harsh is really awesome!" style="width: 100%; height: 100%;"></particle-typography>
     </div>
 
     <!-- Example documentation -->
