@@ -1,28 +1,24 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bento Grid Demos</title>
+    <meta name="description" content="Explore a collection of web component demos, including animated testimonials, particle typography, and more. Each demo includes a live preview and source code.">
+    <title>Webcomponent Hub - Demos</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
 </head>
 <body>
     <header class="site-header">
         <h1>Webcomponent Hub</h1>
-        <p>Explore various pure HTML CSS JS demos created as webcomponents and use as neeeded.</p>
+        <p>Explore various pure HTML CSS JS demos created as webcomponents and use as needed.</p>
     </header>
     <div class="grid-container">
-        
-      <div class="card" data-file="demos/Animated Testimonials.html" data-title="Animated Testimonials" data-docs="">
-        <h3>Animated Testimonials</h3>
-      </div>
-    
-      <div class="card" data-file="demos/Particle Typography.html" data-title="Particle Typography" data-docs="">
-        <h3>Particle Typography</h3>
-      </div>
-    
+        <!-- Demo cards will be loaded here by script.js -->
+        <p class="empty-message" id="loading-message">Loading demos...</p>
     </div>
 
     <div id="modal" class="modal">
@@ -38,10 +34,13 @@
                     <button class="tab-link" id="docs-tab-button" onclick="openTab(event, 'docs-content-tab')" style="display:none;">Docs</button>
                 </div>
                 <div id="demo-tab" class="tab-content" style="display: block;">
-                    <iframe id="modal-iframe" src="" title="Demo content"></iframe>
+                    <iframe id="modal-iframe" src="" title="Demo content" sandbox="allow-scripts allow-same-origin"></iframe>
                 </div>
                 <div id="code-tab" class="tab-content">
-                    <pre><code id="modal-code"></code></pre>
+                    <div class="code-toolbar">
+                        <button id="copy-code-button" class="copy-button">Copy Code</button>
+                    </div>
+                    <pre><code id="modal-code" class="language-html"></code></pre>
                 </div>
                 <div id="docs-content-tab" class="tab-content">
                     <pre><code id="modal-docs"></code></pre>
@@ -49,6 +48,20 @@
             </div>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
     <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

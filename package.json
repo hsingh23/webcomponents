@@ -1,10 +1,10 @@
 {
   "name": "bento-grid-generator",
-  "version": "1.1.0",
-  "description": "Generates a Bento grid from HTML files, extracting documentation from comments.",
+  "version": "1.2.0",
+  "description": "Generates a demos.json file from HTML files in the demos directory.",
   "main": "generate-index.js",
   "scripts": {
-    "start": "node generate-index.js && echo 'index.html generated. Open it in your browser.'",
+    "start": "npm run generate && echo 'demos.json generated. Open index.html in your browser.'",
     "generate": "node generate-index.js"
   },
   "dependencies": {

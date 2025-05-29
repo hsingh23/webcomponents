@@ -1,4 +1,4 @@
-name: Generate Bento Grid Index
+name: Generate Demos JSON and Deploy to Pages
 
 on:
   push:
@@ -7,36 +7,51 @@ on:
   workflow_dispatch: # Allows manual triggering
 
 jobs:
-  build-and-deploy: # Renamed job for clarity
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Required to push changes back to the repo
+      pages: write # Required to deploy to GitHub Pages
+      id-token: write # Required for OIDC token
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Updated to v4
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4 # Updated to v4
+        uses: actions/setup-node@v4
         with:
-          node-version: '22' # Updated Node.js version
-          cache: 'npm' # Enable caching for npm dependencies
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci # Use npm ci for faster, more reliable installs in CI
+        run: npm ci
 
-      - name: Generate index.html
-        run: node generate-index.js
+      - name: Generate demos.json
+        run: node generate-index.js # This script now generates demos.json
 
-      - name: Commit and push if changed
+      - name: Commit and push demos.json if changed
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Check if index.html has changed
-          if ! git diff --quiet index.html; then
-            git add index.html
-            git commit -m 'docs: auto-generate index.html from demos'
+          # Check if public/data/demos.json has changed
+          if ! git diff --quiet public/data/demos.json; then
+            git add public/data/demos.json
+            git commit -m 'docs: auto-generate demos.json from demos'
             git push
           else
-            echo "index.html has not changed. No commit needed."
+            echo "demos.json has not changed. No commit needed."
           fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

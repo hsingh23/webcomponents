@@ -1,8 +1,18 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-async function generateIndex() {
+async function generateDemosJson() {
   const demosDir = path.join(__dirname, 'demos');
+  const outputDir = path.join(__dirname, 'public', 'data');
+  const outputFile = path.join(outputDir, 'demos.json');
+
+  try {
+    await fs.mkdir(outputDir, { recursive: true }); // Ensure public/data directory exists
+  } catch (error) {
+    console.error('Error creating output directory:', error);
+    process.exit(1);
+  }
+
   let files;
   try {
     files = await fs.readdir(demosDir);
@@ -20,14 +30,14 @@ async function generateIndex() {
   }
 
   const htmlFiles = files.filter(file => file.endsWith('.html'));
-  let cardsHtml = '';
+  let demos = []; // Changed from cardsHtml to an array
 
   for (const file of htmlFiles) {
     const filePath = path.join(demosDir, file); // Corrected path for reading file
     const demoRelativePath = path.join('demos', file); // Path for iframe src and fetching
     const name = path.basename(file, '.html').replace('!', '');
     const isFeatured = file.endsWith('!.html');
-    const cardClass = isFeatured ? 'card featured' : 'card';
+    // const cardClass = isFeatured ? 'card featured' : 'card'; // No longer needed here
 
     let fileContent = '';
     let docsContent = '';
@@ -55,11 +65,12 @@ async function generateIndex() {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 
-    cardsHtml += `
-      <div class="${cardClass}" data-file="${demoRelativePath}" data-title="${name}" data-docs="${escapedDocsContent}">
-        <h3>${name}</h3>
-      </div>
-    `;
+    demos.push({ // Add demo object to array
+        file: demoRelativePath,
+        title: name,
+        docs: escapedDocsContent,
+        featured: isFeatured
+    });
   }
 
   if (htmlFiles.length === 0 && files.length > 0) {
@@ -68,59 +79,16 @@ async function generateIndex() {
     console.info("The 'demos' directory is empty. The index page will be empty.");
   }
 
-
-  const template = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bento Grid Demos</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <header class="site-header">
-        <h1>Webcomponent Hub</h1>
-        <p>Explore various pure HTML CSS JS demos created as webcomponents and use as neeeded.</p>
-    </header>
-    <div class="grid-container">
-        ${cardsHtml || '<p class="empty-message">No demos available. Add HTML files to the "demos" folder.</p>'}
-    </div>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-title"></h2>
-                <button id="close-button" class="close-button" aria-label="Close modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="tabs">
-                    <button class="tab-link active" onclick="openTab(event, 'demo-tab')">Demo</button>
-                    <button class="tab-link" onclick="openTab(event, 'code-tab')">Source Code</button>
-                    <button class="tab-link" id="docs-tab-button" onclick="openTab(event, 'docs-content-tab')" style="display:none;">Docs</button>
-                </div>
-                <div id="demo-tab" class="tab-content" style="display: block;">
-                    <iframe id="modal-iframe" src="" title="Demo content"></iframe>
-                </div>
-                <div id="code-tab" class="tab-content">
-                    <pre><code id="modal-code"></code></pre>
-                </div>
-                <div id="docs-content-tab" class="tab-content">
-                    <pre><code id="modal-docs"></code></pre>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>`;
-
-  await fs.writeFile('index.html', template);
-  console.log('index.html has been generated successfully.');
+  try {
+    await fs.writeFile(outputFile, JSON.stringify(demos, null, 2));
+    console.log(`demos.json has been generated successfully at ${outputFile}`);
+  } catch (error) {
+    console.error('Error writing demos.json:', error);
+    process.exit(1);
+  }
 }
 
-generateIndex().catch(err => {
-    console.error("Failed to generate index.html:", err);
+generateDemosJson().catch(err => { // Renamed function call
+    console.error("Failed to generate demos.json:", err);
     process.exit(1);
 });

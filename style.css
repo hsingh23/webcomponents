@@ -33,8 +33,8 @@ body {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Slightly larger min size */
-    grid-auto-rows: minmax(180px, auto); /* Slightly taller rows */
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Adjusted minmax for slightly larger cards */
+    grid-auto-rows: minmax(200px, auto); /* Adjusted minmax for slightly taller rows */
     gap: 1.5rem; /* Consistent gap */
     padding: 2rem;
     max-width: 1400px;
@@ -45,15 +45,16 @@ body {
     background-color: #ffffff;
     border-radius: 12px; /* Softer corners */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* More pronounced shadow */
-    padding: 1.5rem;
+    padding: 0; /* Remove padding to allow iframe to fill */
     cursor: pointer;
     transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
     display: flex;
     flex-direction: column; /* Align content vertically */
-    justify-content: center; /* Center content vertically */
-    align-items: center; /* Center content horizontally */
+    justify-content: flex-start; /* Align to top for iframe */
+    align-items: stretch; /* Stretch iframe horizontally */
     text-align: center;
     overflow: hidden; /* Ensure content doesn't spill */
+    position: relative; /* For positioning the title overlay */
 }
 
 .card:hover {
@@ -61,10 +62,35 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
+.card-iframe-container {
+    width: 100%;
+    height: 150px; /* Fixed height for the iframe preview area */
+    overflow: hidden;
+    border-bottom: 1px solid #eee;
+}
+
+.card-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none; /* Prevent interaction with iframe in the grid */
+}
+
+.card-title-overlay {
+    padding: 0.75rem 1rem; /* Padding for the title text */
+    background-color: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid #eee;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .card h3 {
     margin: 0;
-    font-size: 1.25rem; /* Larger title */
+    font-size: 1.1rem; /* Adjusted title size */
     color: #34495e; /* Dark blue for titles */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card.featured {
@@ -73,8 +99,13 @@ body {
     background-color: #e9f5ff; /* Light blue tint for featured items */
     border: 2px solid #a3d5ff; /* Blue border for featured */
 }
+
+.card.featured .card-iframe-container {
+    height: calc(100% - 50px); /* Adjust height for featured card title */
+}
+
 .card.featured h3 {
-    font-size: 1.75rem; /* Even larger title for featured */
+    font-size: 1.5rem; /* Even larger title for featured */
     color: #1a73e8; /* Stronger blue for featured titles */
 }
 
@@ -127,11 +158,11 @@ body {
 
 @keyframes slideIn {
     from {
-        transform: translateY(-30px) scale(0.98);
+        transform: translateY(-30px);
         opacity: 0;
     }
     to {
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
         opacity: 1;
     }
 }
@@ -208,60 +239,75 @@ body {
 
 #modal-iframe {
     width: 100%;
-    height: 450px; /* Default height, can be adjusted */
-    min-height: 300px; /* Minimum height */
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    height: 60vh; /* Give iframe a good portion of viewport height */
+    border: 1px solid #ddd; /* Optional: add a border to the iframe */
 }
 
-#modal-code, #modal-docs {
-    background-color: #f8f9fa; /* Lighter background for code/docs */
-    padding: 1rem;
-    border-radius: 8px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    max-height: 450px; /* Allow scrolling within pre block */
-    overflow-y: auto;
-    border: 1px solid #e0e0e0;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+#code-tab pre[class*="language-"] {
+    max-height: 60vh;
+    overflow: auto;
+    border-radius: 6px;
+}
+
+.code-toolbar {
+    text-align: right;
+    margin-bottom: 0.5rem;
+}
+
+.copy-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
     font-size: 0.9rem;
-    color: #212529; /* Darker text for readability */
+    transition: background-color 0.2s ease;
+}
+
+.copy-button:hover {
+    background-color: #0056b3;
+}
+
+
+#modal-code, #modal-docs {
+    white-space: pre-wrap; /* Allow text to wrap in docs */
+    word-break: break-all; /* Break long words if necessary */
+    font-size: 0.9em;
 }
 
 .site-footer {
-    margin-top: 2rem;
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
     border-top: 1px solid #e0e0e0;
-    font-size: 0.9rem;
-    color: #777;
+    margin-top: 2rem;
 }
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         padding: 1rem;
     }
     .card.featured {
-        grid-column: span 1; /* Stack featured items on smaller screens */
+        grid-column: span 1; /* Stack featured cards on smaller screens */
         grid-row: span 1;
+    }
+    .card.featured .card-iframe-container {
+        height: 150px; /* Reset height for stacked featured cards */
     }
     .modal-content {
         width: 95%;
-        padding: 1rem 1.5rem;
-        max-height: 95vh;
+        padding: 1rem;
     }
     .modal-header h2 {
         font-size: 1.5rem;
     }
-    .tabs {
-        flex-wrap: wrap; /* Allow tabs to wrap on small screens */
-    }
     .tab-link {
-        padding: 0.7rem 1rem;
-        font-size: 0.95rem;
-    }
-    #modal-iframe, #modal-code, #modal-docs {
-        height: 350px; /* Adjust height for smaller screens */
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
     }
 }
 
@@ -275,23 +321,40 @@ body {
     .grid-container {
         grid-template-columns: 1fr; /* Single column on very small screens */
     }
-    .modal-content {
-        padding: 1rem;
+    .modal-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
     .modal-header h2 {
-        font-size: 1.3rem;
-    }
-    .tabs {
         margin-bottom: 0.5rem;
     }
+    .close-button {
+        align-self: flex-end;
+        position: absolute; /* Position it relative to modal-header */
+        top: 1rem;
+        right: 1rem;
+    }
+    .tabs {
+        flex-wrap: wrap; /* Allow tabs to wrap on small screens */
+    }
     .tab-link {
-        padding: 0.6rem 0.8rem;
-        font-size: 0.9rem;
-        flex-grow: 1; /* Make tabs take equal width if they wrap */
-        text-align: center;
-        margin-right: 0;
+        margin-bottom: 0.5rem;
     }
-    #modal-iframe, #modal-code, #modal-docs {
-        height: 300px;
-    }
+}
+
+/* PrismJS Toolbar buttons styling */
+div.code-toolbar > .toolbar {
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+div.code-toolbar > .toolbar .toolbar-item > button {
+    background: #007bff;
+    color: #fff;
+    box-shadow: none;
+    border-radius: 4px;
+    padding: 0.3em 0.6em;
+    font-size: 0.85em;
+}
+div.code-toolbar > .toolbar .toolbar-item > button:hover {
+    background: #0056b3;
 }
