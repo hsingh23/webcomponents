@@ -1,0 +1,297 @@
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: #f0f2f5; /* Light grayish blue */
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.site-header, .site-footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: #ffffff; /* White background for header/footer */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.site-header {
+    border-bottom: 1px solid #e0e0e0;
+}
+.site-header h1 {
+    color: #2c3e50; /* Darker blue-gray for heading */
+    margin-bottom: 0.5rem;
+}
+.site-header p {
+    color: #555;
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Slightly larger min size */
+    grid-auto-rows: minmax(180px, auto); /* Slightly taller rows */
+    gap: 1.5rem; /* Consistent gap */
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto; /* Center the grid */
+}
+
+.card {
+    background-color: #ffffff;
+    border-radius: 12px; /* Softer corners */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* More pronounced shadow */
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+    display: flex;
+    flex-direction: column; /* Align content vertically */
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    text-align: center;
+    overflow: hidden; /* Ensure content doesn't spill */
+}
+
+.card:hover {
+    transform: translateY(-6px) scale(1.02); /* Slightly more lift and scale */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 1.25rem; /* Larger title */
+    color: #34495e; /* Dark blue for titles */
+}
+
+.card.featured {
+    grid-column: span 2;
+    grid-row: span 2;
+    background-color: #e9f5ff; /* Light blue tint for featured items */
+    border: 2px solid #a3d5ff; /* Blue border for featured */
+}
+.card.featured h3 {
+    font-size: 1.75rem; /* Even larger title for featured */
+    color: #1a73e8; /* Stronger blue for featured titles */
+}
+
+.empty-message {
+    grid-column: 1 / -1; /* Span all columns */
+    text-align: center;
+    font-size: 1.2rem;
+    color: #777;
+    padding: 3rem;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker backdrop */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow-y: auto; /* Allow modal itself to scroll if content is too tall */
+}
+
+.modal.show {
+    display: flex; /* Use flex to center modal content */
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: auto; /* Centering for older browsers, flex handles modern ones */
+    padding: 1.5rem 2rem; /* More padding */
+    border-radius: 10px; /* Softer corners */
+    width: 90%;
+    max-width: 900px; /* Max width for large screens */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+    max-height: 90vh; /* Limit height to allow scrolling within modal-body */
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-30px) scale(0.98);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #2c3e50;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 2.2rem; /* Larger close button */
+    font-weight: normal; /* Not too bold */
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+.close-button:hover {
+    color: #333;
+}
+
+
+.modal-body {
+    overflow-y: auto; /* Allow scrolling within the body if content exceeds max-height */
+    flex-grow: 1; /* Allow body to take available space */
+}
+
+.tabs {
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1rem;
+    display: flex; /* Align tabs in a row */
+}
+
+.tab-link {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent; /* For active state */
+    padding: 0.8rem 1.2rem; /* Adjust padding */
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #555;
+    transition: color 0.2s ease, border-bottom-color 0.2s ease;
+    margin-right: 0.5rem; /* Spacing between tabs */
+}
+
+.tab-link:hover {
+    color: #007bff; /* Blue hover */
+}
+
+.tab-link.active {
+    border-bottom-color: #007bff; /* Blue active indicator */
+    color: #007bff;
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+    padding-top: 1rem; /* Space above tab content */
+}
+
+#modal-iframe {
+    width: 100%;
+    height: 450px; /* Default height, can be adjusted */
+    min-height: 300px; /* Minimum height */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+#modal-code, #modal-docs {
+    background-color: #f8f9fa; /* Lighter background for code/docs */
+    padding: 1rem;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 450px; /* Allow scrolling within pre block */
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 0.9rem;
+    color: #212529; /* Darker text for readability */
+}
+
+.site-footer {
+    margin-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        padding: 1rem;
+    }
+    .card.featured {
+        grid-column: span 1; /* Stack featured items on smaller screens */
+        grid-row: span 1;
+    }
+    .modal-content {
+        width: 95%;
+        padding: 1rem 1.5rem;
+        max-height: 95vh;
+    }
+    .modal-header h2 {
+        font-size: 1.5rem;
+    }
+    .tabs {
+        flex-wrap: wrap; /* Allow tabs to wrap on small screens */
+    }
+    .tab-link {
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+    }
+    #modal-iframe, #modal-code, #modal-docs {
+        height: 350px; /* Adjust height for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .site-header h1 {
+        font-size: 1.8rem;
+    }
+    .site-header p {
+        font-size: 1rem;
+    }
+    .grid-container {
+        grid-template-columns: 1fr; /* Single column on very small screens */
+    }
+    .modal-content {
+        padding: 1rem;
+    }
+    .modal-header h2 {
+        font-size: 1.3rem;
+    }
+    .tabs {
+        margin-bottom: 0.5rem;
+    }
+    .tab-link {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+        flex-grow: 1; /* Make tabs take equal width if they wrap */
+        text-align: center;
+        margin-right: 0;
+    }
+    #modal-iframe, #modal-code, #modal-docs {
+        height: 300px;
+    }
+}
