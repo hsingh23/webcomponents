@@ -39,3 +39,4 @@ jobs:
             git push
           else
             echo "index.html has not changed. No commit needed."
+          fi
