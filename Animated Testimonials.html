@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Testimonials Component</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Web Component Styles */
+        animated-testimonials {
+            display: block;
+            max-width: 24rem;
+            margin: 0 auto;
+            padding: 5rem 1rem;
+        }
+
+        @media (min-width: 768px) {
+            animated-testimonials {
+                max-width: 64rem;
+                padding: 5rem 2rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            animated-testimonials {
+                padding: 5rem 3rem;
+            }
+        }
+
+        .testimonials-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5rem;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .testimonials-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .image-stack {
+            position: relative;
+            height: 20rem;
+            width: 100%;
+        }
+
+        .testimonial-image {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 1.5rem;
+            object-fit: cover;
+            object-position: center;
+            transition: all 0.4s ease-in-out;
+            transform-origin: bottom;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-drag: none;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .testimonial-image.active {
+            z-index: 999 !important;
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+
+        .testimonial-image.inactive {
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+
+        .content-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1rem 0;
+        }
+
+        .testimonial-content {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .testimonial-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0a0a0a;
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .testimonial-designation {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        .testimonial-quote {
+            font-size: 1.125rem;
+            line-height: 1.75;
+            color: #6b7280;
+        }
+
+        .quote-word {
+            display: inline-block;
+            opacity: 0;
+            filter: blur(10px);
+            transform: translateY(5px);
+            animation: revealWord 0.2s ease-out forwards;
+            margin-right: 0.25em;
+        }
+
+        .quote-word:last-child {
+            margin-right: 0;
+        }
+
+        @keyframes revealWord {
+            to {
+                opacity: 1;
+                filter: blur(0);
+                transform: translateY(0);
+            }
+        }
+
+        .navigation-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+
+        @media (min-width: 768px) {
+            .navigation-buttons {
+                margin-top: 0;
+                padding-top: 3rem;
+            }
+        }
+
+        .nav-button {
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            background-color: #f3f4f6;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            background-color: #e5e7eb;
+        }
+
+        .nav-button:hover .arrow-icon {
+            transform: rotate(12deg);
+        }
+
+        .nav-button.prev:hover .arrow-icon {
+            transform: rotate(-12deg);
+        }
+
+        .arrow-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            transition: transform 0.3s ease;
+            color: #0a0a0a;
+        }
+
+        /* Animation for image stack on change */
+        @keyframes bounceImage {
+            0% { transform: translateY(0) scale(1) rotate(0deg); }
+            50% { transform: translateY(-80px) scale(1) rotate(0deg); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); }
+        }
+
+        .testimonial-image.active.animating {
+            animation: bounceImage 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <animated-testimonials></animated-testimonials>
+
+    <script>
+        class AnimatedTestimonials extends HTMLElement {
+            constructor() {
+                super();
+                this.currentIndex = 0;
+                this._testimonials = [];
+                this.autoplayInterval = null;
+                this.isAnimating = false;
+                this._isUpdating = false;
+            }
+
+            connectedCallback() {
+                this.render();
+                this.setupEventListeners();
+                
+                if (this.hasAttribute('autoplay')) {
+                    this.startAutoplay();
+                }
+            }
+
+            disconnectedCallback() {
+                this.stopAutoplay();
+            }
+
+            static get observedAttributes() {
+                return ['testimonials', 'autoplay'];
+            }
+
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (name === 'testimonials' && newValue && !this._isUpdating) {
+                    try {
+                        this._testimonials = JSON.parse(newValue);
+                        this.render();
+                    } catch (e) {
+                        console.error('Invalid testimonials data:', e);
+                    }
+                }
+                
+                if (name === 'autoplay') {
+                    if (newValue !== null) {
+                        this.startAutoplay();
+                    } else {
+                        this.stopAutoplay();
+                    }
+                }
+            }
+
+            set testimonials(value) {
+                this._testimonials = value;
+                this._isUpdating = true;
+                this.setAttribute('testimonials', JSON.stringify(value));
+                this._isUpdating = false;
+                this.render();
+            }
+
+            get testimonials() {
+                return this._testimonials || [];
+            }
+
+            render() {
+                if (!this.testimonials.length) return;
+                
+                this.innerHTML = `
+                    <div class="testimonials-container">
+                        <div class="image-stack">
+                            ${this.renderImages()}
+                        </div>
+                        <div class="content-section">
+                            <div class="testimonial-content">
+                                ${this.renderContent()}
+                            </div>
+                            <div class="navigation-buttons">
+                                <button class="nav-button prev" aria-label="Previous testimonial">
+                                    <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M15 18l-6-6 6-6" />
+                                    </svg>
+                                </button>
+                                <button class="nav-button next" aria-label="Next testimonial">
+                                    <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 18l6-6-6-6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                this.setupEventListeners();
+            }
+
+            renderImages() {
+                return this.testimonials.map((testimonial, index) => {
+                    const rotation = this.getRandomRotation();
+                    const zIndex = this.testimonials.length + 2 - index;
+                    const isActive = index === this.currentIndex;
+                    
+                    return `
+                        <img 
+                            src="${testimonial.src}" 
+                            alt="${testimonial.name}"
+                            class="testimonial-image ${isActive ? 'active' : 'inactive'}"
+                            data-index="${index}"
+                            style="
+                                z-index: ${isActive ? 999 : zIndex};
+                                transform: ${isActive ? 'scale(1) rotate(0deg)' : `scale(0.95) rotate(${rotation}deg)`};
+                            "
+                        />
+                    `;
+                }).join('');
+            }
+
+            renderContent() {
+                const current = this.testimonials[this.currentIndex];
+                if (!current) return '';
+
+                const words = current.quote.split(' ');
+                const wordSpans = words.map((word, index) => 
+                    `<span class="quote-word" style="animation-delay: ${index * 0.02}s">${word}</span>`
+                ).join(' ');
+
+                return `
+                    <h3 class="testimonial-name">${current.name}</h3>
+                    <p class="testimonial-designation">${current.designation}</p>
+                    <p class="testimonial-quote">${wordSpans}</p>
+                `;
+            }
+
+            setupEventListeners() {
+                const prevButton = this.querySelector('.nav-button.prev');
+                const nextButton = this.querySelector('.nav-button.next');
+
+                if (prevButton) {
+                    prevButton.addEventListener('click', () => this.handlePrev());
+                }
+
+                if (nextButton) {
+                    nextButton.addEventListener('click', () => this.handleNext());
+                }
+            }
+
+            handlePrev() {
+                if (this.isAnimating) return;
+                this.currentIndex = (this.currentIndex - 1 + this.testimonials.length) % this.testimonials.length;
+                this.updateTestimonial();
+            }
+
+            handleNext() {
+                if (this.isAnimating) return;
+                this.currentIndex = (this.currentIndex + 1) % this.testimonials.length;
+                this.updateTestimonial();
+            }
+
+            updateTestimonial() {
+                this.isAnimating = true;
+
+                // Update images
+                const images = this.querySelectorAll('.testimonial-image');
+                images.forEach((img, index) => {
+                    const isActive = index === this.currentIndex;
+                    const rotation = this.getRandomRotation();
+                    const zIndex = this.testimonials.length + 2 - index;
+
+                    img.classList.remove('active', 'inactive', 'animating');
+                    img.classList.add(isActive ? 'active' : 'inactive');
+
+                    if (isActive) {
+                        img.classList.add('animating');
+                        img.style.zIndex = '999';
+                        img.style.transform = 'scale(1) rotate(0deg)';
+                    } else {
+                        img.style.zIndex = isActive ? '999' : zIndex;
+                        img.style.transform = `scale(0.95) rotate(${rotation}deg)`;
+                    }
+                });
+
+                // Update content with animation
+                const contentContainer = this.querySelector('.testimonial-content');
+                contentContainer.style.opacity = '0';
+                contentContainer.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    contentContainer.innerHTML = this.renderContent();
+                    contentContainer.style.opacity = '1';
+                    contentContainer.style.transform = 'translateY(0)';
+                    
+                    setTimeout(() => {
+                        this.isAnimating = false;
+                    }, 200);
+                }, 100);
+            }
+
+            getRandomRotation() {
+                return Math.floor(Math.random() * 21) - 10;
+            }
+
+            startAutoplay() {
+                this.stopAutoplay();
+                this.autoplayInterval = setInterval(() => {
+                    this.handleNext();
+                }, 5000);
+            }
+
+            stopAutoplay() {
+                if (this.autoplayInterval) {
+                    clearInterval(this.autoplayInterval);
+                    this.autoplayInterval = null;
+                }
+            }
+        }
+
+        // Register the custom element
+        customElements.define('animated-testimonials', AnimatedTestimonials);
+
+        // Demo data
+        const testimonials = [
+            {
+                quote: "The attention to detail and innovative features have completely transformed our workflow. This is exactly what we've been looking for.",
+                name: "Sarah Chen",
+                designation: "Product Manager at TechFlow",
+                src: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=3560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            },
+            {
+                quote: "Implementation was seamless and the results exceeded our expectations. The platform's flexibility is remarkable.",
+                name: "Michael Rodriguez",
+                designation: "CTO at InnovateSphere",
+                src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            },
+            {
+                quote: "This solution has significantly improved our team's productivity. The intuitive interface makes complex tasks simple.",
+                name: "Emily Watson",
+                designation: "Operations Director at CloudScale",
+                src: "https://images.unsplash.com/photo-1623582854588-d60de57fa33f?q=80&w=3540&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            },
+            {
+                quote: "Outstanding support and robust features. It's rare to find a product that delivers on all its promises.",
+                name: "James Kim",
+                designation: "Engineering Lead at DataPro",
+                src: "https://images.unsplash.com/photo-1636041293178-808a6762ab39?q=80&w=3464&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            },
+            {
+                quote: "The scalability and performance have been game-changing for our organization. Highly recommend to any growing business.",
+                name: "Lisa Thompson",
+                designation: "VP of Technology at FutureNet",
+                src: "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?q=80&w=2592&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            },
+        ];
+
+        // Initialize the component with testimonials
+        document.addEventListener('DOMContentLoaded', () => {
+            const component = document.querySelector('animated-testimonials');
+            if (component) {
+                component.testimonials = testimonials;
+                // Uncomment the next line to enable autoplay
+                // component.setAttribute('autoplay', '');
+            }
+        });
+    </script>
+</body>
+</html>
