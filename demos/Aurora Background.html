@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora Background Component</title>
+    <style>
+        /* Global CSS Variables for Colors */
+        :root {
+            --white: #ffffff;
+            --black: #000000;
+            --transparent: transparent;
+            --blue-300: #93c5fd;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --indigo-300: #a5b4fc;
+            --violet-200: #ddd6fe;
+            --zinc-50: #fafafa;
+            --zinc-900: #18181b;
+            --slate-950: #020617;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --default-bg: var(--zinc-900);
+                --default-text: #ffffff;
+            }
+        }
+
+        :root {
+            --default-bg: var(--zinc-50);
+            --default-text: var(--slate-950);
+        }
+
+        /* Aurora animation keyframes */
+        @keyframes aurora {
+            from {
+                background-position: 50% 50%, 50% 50%;
+            }
+            to {
+                background-position: 350% 50%, 350% 50%;
+            }
+        }
+
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .demo-container {
+            margin-bottom: 40px;
+        }
+
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .demo-description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Docs
+    # Aurora Background Web Component
+
+    A beautiful animated aurora background effect implemented as a pure HTML/CSS/JS web component.
+
+    ## Usage
+
+    ```html
+    <aurora-background>
+        <h1>Your content here</h1>
+        <p>Any HTML content can go inside</p>
+    </aurora-background>
+    ```
+
+    ## Attributes
+
+    - `show-radial-gradient`: (optional) Boolean attribute to show/hide radial gradient mask
+    - `height`: (optional) Set custom height (default: 100vh)
+    - `dark-mode`: (optional) Force dark mode regardless of system preference
+
+    ## Examples
+
+    ```html
+    <aurora-background>
+        <h1>Welcome</h1>
+    </aurora-background>
+
+    <aurora-background show-radial-gradient>
+        <h1>Masked Aurora</h1>
+    </aurora-background>
+
+    <aurora-background height="400px">
+        <p>Custom height aurora</p>
+    </aurora-background>
+
+    <aurora-background dark-mode>
+        <h1>Always Dark</h1>
+    </aurora-background>
+    ```
+
+    ## Styling
+
+    The component uses CSS custom properties that can be overridden:
+    - `--aurora-duration`: Animation duration (default: 60s)
+    - `--aurora-blur`: Blur amount (default: 10px)
+    - `--aurora-opacity`: Aurora opacity (default: 0.5)
+    -->
+
+    <h1>Aurora Background Component Demo</h1>
+
+    <div class="demo-container">
+        <div class="demo-title">Basic Aurora Background</div>
+        <div class="demo-description">A full-screen aurora background with centered content</div>
+        <aurora-background>
+            <div style="text-align: center; z-index: 10; position: relative;">
+                <h1 style="font-size: 3rem; margin-bottom: 1rem; color: var(--default-text);">
+                    Aurora Magic
+                </h1>
+                <p style="font-size: 1.2rem; opacity: 0.8; color: var(--default-text);">
+                    Beautiful animated background effect
+                </p>
+            </div>
+        </aurora-background>
+    </div>
+
+    <div class="demo-container">
+        <div class="demo-title">Aurora with Radial Gradient Mask</div>
+        <div class="demo-description">Aurora effect with a radial gradient mask for focused lighting</div>
+        <aurora-background show-radial-gradient height="400px">
+            <div style="text-align: center; z-index: 10; position: relative;">
+                <h2 style="color: var(--default-text); margin-bottom: 1rem;">
+                    Masked Aurora
+                </h2>
+                <p style="color: var(--default-text); opacity: 0.8;">
+                    With radial gradient masking
+                </p>
+            </div>
+        </aurora-background>
+    </div>
+
+    <div class="demo-container">
+        <div class="demo-title">Compact Aurora</div>
+        <div class="demo-description">Smaller aurora background for cards or sections</div>
+        <aurora-background height="300px">
+            <div style="text-align: center; z-index: 10; position: relative; padding: 2rem;">
+                <h3 style="color: var(--default-text); margin-bottom: 1rem;">
+                    Compact Design
+                </h3>
+                <p style="color: var(--default-text); opacity: 0.8; max-width: 400px;">
+                    Perfect for smaller sections, cards, or hero areas that don't need full viewport height.
+                </p>
+            </div>
+        </aurora-background>
+    </div>
+
+    <div class="demo-container">
+        <div class="demo-title">Dark Mode Aurora</div>
+        <div class="demo-description">Aurora with forced dark mode styling</div>
+        <aurora-background dark-mode height="350px">
+            <div style="text-align: center; z-index: 10; position: relative;">
+                <h2 style="color: white; margin-bottom: 1rem;">
+                    Dark Mode Aurora
+                </h2>
+                <p style="color: white; opacity: 0.8;">
+                    Always uses dark mode styling
+                </p>
+            </div>
+        </aurora-background>
+    </div>
+
+    <script>
+        class AuroraBackground extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+
+            connectedCallback() {
+                this.render();
+            }
+
+            static get observedAttributes() {
+                return ['show-radial-gradient', 'height', 'dark-mode'];
+            }
+
+            attributeChangedCallback() {
+                if (this.shadowRoot) {
+                    this.render();
+                }
+            }
+
+            render() {
+                const showRadialGradient = this.hasAttribute('show-radial-gradient');
+                const height = this.getAttribute('height') || '100vh';
+                const darkMode = this.hasAttribute('dark-mode');
+
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        :host {
+                            display: block;
+                            --aurora-duration: 60s;
+                            --aurora-blur: 10px;
+                            --aurora-opacity: 0.5;
+                        }
+
+                        /* CSS Variables */
+                        .aurora-container {
+                            --white: #ffffff;
+                            --black: #000000;
+                            --transparent: transparent;
+                            --blue-300: #93c5fd;
+                            --blue-400: #60a5fa;
+                            --blue-500: #3b82f6;
+                            --indigo-300: #a5b4fc;
+                            --violet-200: #ddd6fe;
+                            --zinc-50: #fafafa;
+                            --zinc-900: #18181b;
+                            --slate-950: #020617;
+                        }
+
+                        /* Aurora animation */
+                        @keyframes aurora {
+                            from {
+                                background-position: 50% 50%, 50% 50%;
+                            }
+                            to {
+                                background-position: 350% 50%, 350% 50%;
+                            }
+                        }
+
+                        .aurora-container {
+                            position: relative;
+                            display: flex;
+                            flex-direction: column;
+                            height: ${height};
+                            align-items: center;
+                            justify-content: center;
+                            background: ${darkMode ? 'var(--zinc-900)' : 'var(--zinc-50)'};
+                            color: ${darkMode ? '#ffffff' : 'var(--slate-950)'};
+                            transition: background 0.3s ease;
+                            overflow: hidden;
+                        }
+
+                        /* Auto dark mode detection */
+                        @media (prefers-color-scheme: dark) {
+                            .aurora-container:not(.force-light) {
+                                background: var(--zinc-900);
+                                color: #ffffff;
+                            }
+                        }
+
+                        ${darkMode ? '.aurora-container { background: var(--zinc-900) !important; color: #ffffff !important; }' : ''}
+
+                        .aurora-effect {
+                            position: absolute;
+                            inset: -10px;
+                            overflow: hidden;
+                            pointer-events: none;
+                            opacity: var(--aurora-opacity);
+                            will-change: transform;
+                        }
+
+                        .aurora-layer {
+                            position: absolute;
+                            inset: 0;
+                            background-image: 
+                                repeating-linear-gradient(100deg, var(--white) 0%, var(--white) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--white) 16%),
+                                repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%);
+                            background-size: 300%, 200%;
+                            background-position: 50% 50%, 50% 50%;
+                            filter: blur(var(--aurora-blur));
+                            ${showRadialGradient ? 'mask-image: radial-gradient(ellipse at 100% 0%, black 10%, transparent 70%);' : ''}
+                        }
+
+                        /* Dark mode aurora */
+                        @media (prefers-color-scheme: dark) {
+                            .aurora-layer:not(.force-light) {
+                                background-image: 
+                                    repeating-linear-gradient(100deg, var(--black) 0%, var(--black) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--black) 16%),
+                                    repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%);
+                                filter: blur(var(--aurora-blur)) invert(0);
+                            }
+                        }
+
+                        ${darkMode ? `
+                        .aurora-layer {
+                            background-image: 
+                                repeating-linear-gradient(100deg, var(--black) 0%, var(--black) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--black) 16%),
+                                repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%) !important;
+                            filter: blur(var(--aurora-blur)) invert(0) !important;
+                        }
+                        ` : `
+                        .aurora-layer {
+                            filter: blur(var(--aurora-blur)) invert(1);
+                        }
+                        `}
+
+                        .aurora-layer::after {
+                            content: "";
+                            position: absolute;
+                            inset: 0;
+                            background-image: 
+                                repeating-linear-gradient(100deg, var(--white) 0%, var(--white) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--white) 16%),
+                                repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%);
+                            background-size: 200%, 100%;
+                            background-attachment: fixed;
+                            animation: aurora var(--aurora-duration) linear infinite;
+                            mix-blend-mode: difference;
+                        }
+
+                        /* Dark mode for pseudo-element */
+                        @media (prefers-color-scheme: dark) {
+                            .aurora-layer:not(.force-light)::after {
+                                background-image: 
+                                    repeating-linear-gradient(100deg, var(--black) 0%, var(--black) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--black) 16%),
+                                    repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%);
+                            }
+                        }
+
+                        ${darkMode ? `
+                        .aurora-layer::after {
+                            background-image: 
+                                repeating-linear-gradient(100deg, var(--black) 0%, var(--black) 7%, var(--transparent) 10%, var(--transparent) 12%, var(--black) 16%),
+                                repeating-linear-gradient(100deg, var(--blue-500) 10%, var(--indigo-300) 15%, var(--blue-300) 20%, var(--violet-200) 25%, var(--blue-400) 30%) !important;
+                        }
+                        ` : ''}
+
+                        .content {
+                            position: relative;
+                            z-index: 10;
+                        }
+                    </style>
+                    
+                    <div class="aurora-container${darkMode ? '' : ' force-light'}">
+                        <div class="aurora-effect">
+                            <div class="aurora-layer${darkMode ? '' : ' force-light'}"></div>
+                        </div>
+                        <div class="content">
+                            <slot></slot>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Register the custom element
+        customElements.define('aurora-background', AuroraBackground);
+
+        // Demo functionality - add some interactivity
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handler to toggle animation speed
+            const auroraElements = document.querySelectorAll('aurora-background');
+            
+            auroraElements.forEach((element, index) => {
+                element.addEventListener('click', function() {
+                    const currentDuration = this.style.getPropertyValue('--aurora-duration') || '60s';
+                    const newDuration = currentDuration === '60s' ? '30s' : '60s';
+                    this.style.setProperty('--aurora-duration', newDuration);
+                    
+                    // Show feedback
+                    const feedback = document.createElement('div');
+                    feedback.textContent = `Animation speed: ${newDuration === '30s' ? 'Fast' : 'Normal'}`;
+                    feedback.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: rgba(0,0,0,0.8);
+                        color: white;
+                        padding: 10px 15px;
+                        border-radius: 5px;
+                        z-index: 1000;
+                        font-size: 14px;
+                    `;
+                    document.body.appendChild(feedback);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(feedback);
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
