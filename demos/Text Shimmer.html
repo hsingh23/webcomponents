@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Shimmer Web Component</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 2rem;
+        }
+        
+        .example {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .example h3 {
+            margin-top: 0;
+            color: #475569;
+        }
+        
+        .code {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #0f172a;
+                color: #e2e8f0;
+            }
+            
+            .example {
+                background: #1e293b;
+            }
+            
+            .code {
+                background: #334155;
+                color: #e2e8f0;
+            }
+            
+            h1 {
+                color: #f1f5f9;
+            }
+            
+            .example h3 {
+                color: #cbd5e1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Docs
+    # Text Shimmer Web Component
+    
+    A vanilla JavaScript web component that creates animated shimmer text effects.
+    
+    ## How to Use
+    
+    1. Include the component script in your HTML
+    2. Use the `<text-shimmer>` custom element
+    3. Customize with attributes:
+       - `duration`: Animation duration in seconds (default: 2)
+       - `spread`: Shimmer spread multiplier (default: 2)
+       - `tag`: HTML tag to render as (default: 'p')
+    
+    ## Attributes
+    
+    - `duration` (number): How long one shimmer cycle takes
+    - `spread` (number): Controls the width of the shimmer effect
+    - `tag` (string): HTML element type to render (p, span, h1, etc.)
+    
+    ## CSS Custom Properties
+    
+    - `--base-color`: Base text color
+    - `--base-gradient-color`: Shimmer highlight color
+    - `--spread`: Calculated spread value (auto-generated)
+    
+    ## Examples
+    
+    Basic usage:
+    ```html
+    <text-shimmer>Hello World</text-shimmer>
+    ```
+    
+    With custom duration and color:
+    ```html
+    <text-shimmer duration="1.5" style="--base-gradient-color: #3b82f6;">
+        Custom shimmer text
+    </text-shimmer>
+    ```
+    -->
+
+    <div class="container">
+        <h1>Text Shimmer Web Component Examples</h1>
+        
+        <div class="example">
+            <h3>Basic Example</h3>
+            <text-shimmer class="font-mono">Generating code...</text-shimmer>
+            <div class="code">&lt;text-shimmer class="font-mono"&gt;Generating code...&lt;/text-shimmer&gt;</div>
+        </div>
+        
+        <div class="example">
+            <h3>Custom Duration</h3>
+            <text-shimmer duration="1.2" style="font-size: 1.5rem; font-weight: 600;">Hi, how are you?</text-shimmer>
+            <div class="code">&lt;text-shimmer duration="1.2" style="font-size: 1.5rem; font-weight: 600;"&gt;Hi, how are you?&lt;/text-shimmer&gt;</div>
+        </div>
+        
+        <div class="example">
+            <h3>Blue Shimmer</h3>
+            <text-shimmer 
+                duration="1.5" 
+                style="
+                    font-size: 1.25rem; 
+                    font-weight: 500;
+                    --base-color: #2563eb;
+                    --base-gradient-color: #93c5fd;
+                "
+            >
+                Blue shimmer effect
+            </text-shimmer>
+            <div class="code">&lt;text-shimmer duration="1.5" style="--base-color: #2563eb; --base-gradient-color: #93c5fd;"&gt;Blue shimmer effect&lt;/text-shimmer&gt;</div>
+        </div>
+        
+        <div class="example">
+            <h3>Fast Animation</h3>
+            <text-shimmer duration="0.8" spread="1.5">Quick shimmer!</text-shimmer>
+            <div class="code">&lt;text-shimmer duration="0.8" spread="1.5"&gt;Quick shimmer!&lt;/text-shimmer&gt;</div>
+        </div>
+        
+        <div class="example">
+            <h3>As Heading</h3>
+            <text-shimmer tag="h2" duration="2.5" style="margin: 0; font-size: 2rem;">Shimmer Title</text-shimmer>
+            <div class="code">&lt;text-shimmer tag="h2" duration="2.5"&gt;Shimmer Title&lt;/text-shimmer&gt;</div>
+        </div>
+        
+        <div class="example">
+            <h3>Green Theme</h3>
+            <text-shimmer 
+                duration="1.8"
+                style="
+                    font-size: 1.1rem;
+                    --base-color: #059669;
+                    --base-gradient-color: #6ee7b7;
+                "
+            >
+                Success message with shimmer
+            </text-shimmer>
+            <div class="code">&lt;text-shimmer style="--base-color: #059669; --base-gradient-color: #6ee7b7;"&gt;Success message&lt;/text-shimmer&gt;</div>
+        </div>
+    </div>
+
+    <script>
+        class TextShimmer extends HTMLElement {
+            constructor() {
+                super();
+                this.duration = 2;
+                this.spread = 2;
+                this.tag = 'p';
+            }
+            
+            static get observedAttributes() {
+                return ['duration', 'spread', 'tag'];
+            }
+            
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (oldValue !== newValue) {
+                    this[name] = name === 'tag' ? newValue : parseFloat(newValue) || this[name];
+                    if (this.isConnected) {
+                        this.render();
+                    }
+                }
+            }
+            
+            connectedCallback() {
+                // Get attributes
+                this.duration = parseFloat(this.getAttribute('duration')) || 2;
+                this.spread = parseFloat(this.getAttribute('spread')) || 2;
+                this.tag = this.getAttribute('tag') || 'p';
+                
+                this.render();
+            }
+            
+            render() {
+                const text = this.textContent.trim();
+                const dynamicSpread = text.length * this.spread;
+                
+                // Create the element
+                const element = document.createElement(this.tag);
+                element.textContent = text;
+                
+                // Apply base styles
+                element.style.cssText = `
+                    position: relative;
+                    display: inline-block;
+                    background-size: 250% 100%, auto;
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    color: transparent;
+                    background-repeat: no-repeat, padding-box;
+                    --base-color: ${this.style.getPropertyValue('--base-color') || '#a1a1aa'};
+                    --base-gradient-color: ${this.style.getPropertyValue('--base-gradient-color') || '#000000'};
+                    --spread: ${dynamicSpread}px;
+                    background-image: 
+                        linear-gradient(90deg, 
+                            transparent calc(50% - var(--spread)), 
+                            var(--base-gradient-color), 
+                            transparent calc(50% + var(--spread))
+                        ),
+                        linear-gradient(var(--base-color), var(--base-color));
+                    background-position: 100% center, center;
+                    animation: shimmer ${this.duration}s linear infinite;
+                `;
+                
+                // Dark mode support
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    const baseColor = this.style.getPropertyValue('--base-color') || '#71717a';
+                    const gradientColor = this.style.getPropertyValue('--base-gradient-color') || '#ffffff';
+                    element.style.setProperty('--base-color', baseColor);
+                    element.style.setProperty('--base-gradient-color', gradientColor);
+                }
+                
+                // Copy over any existing styles from the original element
+                const computedStyle = window.getComputedStyle(this);
+                const stylesToCopy = [
+                    'font-family', 'font-size', 'font-weight', 'font-style',
+                    'letter-spacing', 'text-decoration', 'text-transform',
+                    'margin', 'padding'
+                ];
+                
+                stylesToCopy.forEach(prop => {
+                    const value = computedStyle.getPropertyValue(prop);
+                    if (value && value !== 'normal' && value !== 'none') {
+                        element.style.setProperty(prop, value);
+                    }
+                });
+                
+                // Copy custom CSS properties
+                if (this.style.cssText) {
+                    const customProps = this.style.cssText.match(/--[\w-]+:[^;]+/g);
+                    if (customProps) {
+                        customProps.forEach(prop => {
+                            const [property, value] = prop.split(':');
+                            element.style.setProperty(property.trim(), value.trim());
+                        });
+                    }
+                }
+                
+                // Copy classes
+                if (this.className) {
+                    element.className = this.className;
+                }
+                
+                // Clear and append
+                this.innerHTML = '';
+                this.appendChild(element);
+            }
+        }
+        
+        // Define the animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shimmer {
+                0% {
+                    background-position: 100% center, center;
+                }
+                100% {
+                    background-position: 0% center, center;
+                }
+            }
+            
+            .font-mono {
+                font-family: 'Courier New', 'Monaco', monospace;
+                font-size: 0.875rem;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Register the custom element
+        customElements.define('text-shimmer', TextShimmer);
+        
+        // Handle dark mode changes
+        if (window.matchMedia) {
+            const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            darkModeQuery.addListener(() => {
+                // Re-render all shimmer elements when color scheme changes
+                document.querySelectorAll('text-shimmer').forEach(el => {
+                    if (el.render) el.render();
+                });
+            });
+        }
+    </script>
+</body>
+</html>
