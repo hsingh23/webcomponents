@@ -13,6 +13,9 @@ jobs:
       contents: write # Required to push changes back to the repo
       pages: write # Required to deploy to GitHub Pages
       id-token: write # Required for OIDC token
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout repository
