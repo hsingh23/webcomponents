@@ -1,13 +1,19 @@
 [
   {
-    "file": "demos/Animated Testimonials.html",
+    "file": "demos/Animated Testimonials!.html",
     "title": "Animated Testimonials",
     "docs": "",
-    "featured": false
+    "featured": true
   },
   {
     "file": "demos/Particle Typography.html",
     "title": "Particle Typography",
+    "docs": "",
+    "featured": false
+  },
+  {
+    "file": "demos/Text Shimmer.html",
+    "title": "Text Shimmer",
     "docs": "",
     "featured": false
   }
